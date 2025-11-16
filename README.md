@@ -65,7 +65,7 @@ make
 - **Aボタン**: 選択したロゴを表示
 - **Bボタン**: メニューに戻る
 
-## 対応ロゴ（20種類）
+## 対応ロゴ（29種類）
 
 ### 任天堂
 1. NES/ファミコン
@@ -73,27 +73,38 @@ make
 3. Nintendo 64
 4. GameCube
 5. Wii
-6. Game Boy
-7. Game Boy Advance
-8. Nintendo DS
+6. Wii U
+7. Nintendo Switch
+8. Game Boy
+9. Game Boy Advance
+10. Nintendo DS
+11. Nintendo 3DS
 
 ### Sony PlayStation
-9. PlayStation 1
-10. PlayStation 2
-11. PlayStation 3
-12. PlayStation 4
+12. PlayStation 1
+13. PlayStation 2
+14. PlayStation 3
+15. PlayStation 4
+16. PlayStation 5
+17. PlayStation Vita
 
 ### SEGA
-13. Genesis/Mega Drive
-14. Saturn
-15. Dreamcast
+18. Genesis/Mega Drive
+19. Saturn
+20. Dreamcast
+
+### Microsoft Xbox
+21. Xbox
+22. Xbox 360
+23. Xbox One
+24. Xbox Series X/S
 
 ### その他
-16. Xbox
-17. Xbox 360
-18. Atari 2600
-19. PC Engine/TurboGrafx-16
-20. Neo Geo
+25. Atari 2600
+26. PC Engine/TurboGrafx-16
+27. Neo Geo
+28. Steam Deck
+29. WonderSwan
 
 ## プロジェクト構成
 
