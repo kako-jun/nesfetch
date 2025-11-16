@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Download and build CC65
+      run: |
+        cd /tmp
+        wget -q https://github.com/cc65/cc65/archive/refs/tags/V2.19.tar.gz
+        tar xzf V2.19.tar.gz
+        cd cc65-2.19
+        make
+        sudo make install PREFIX=/usr/local
+
+    - name: Build NES ROM
+      run: make
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        name: NESfetch ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## NESfetch ${{ steps.get_version.outputs.VERSION }}
+
+          NES ROM for neofetch-style system logo display.
+
+          ### Download
+          Download `nesfetch.nes` and run it with your favorite NES emulator (FCEUX, Nestopia, Mesen, etc.).
+
+          ### Controls
+          - **D-Pad Up/Down**: Select logo
+          - **A Button**: Display selected logo
+          - **B Button**: Back to menu
+
+          ### Supported Logos
+          - Linux
+          - PlayStation
+          - Apple
+          - Windows
+          - NES
+        files: |
+          nesfetch.nes
+        draft: false
+        prerelease: false

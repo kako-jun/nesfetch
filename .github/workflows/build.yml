@@ -1,0 +1,43 @@
+name: Build NES ROM
+
+on:
+  push:
+    branches: [ main, master, 'claude/**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Download and build CC65
+      run: |
+        cd /tmp
+        wget -q https://github.com/cc65/cc65/archive/refs/tags/V2.19.tar.gz
+        tar xzf V2.19.tar.gz
+        cd cc65-2.19
+        make
+        sudo make install PREFIX=/usr/local
+
+    - name: Build NES ROM
+      run: make
+
+    - name: Upload ROM artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: nesfetch-rom
+        path: nesfetch.nes
+
+    - name: Check ROM file
+      run: |
+        ls -lh nesfetch.nes
+        file nesfetch.nes || echo "file command not available"

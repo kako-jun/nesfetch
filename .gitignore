@@ -1,0 +1,12 @@
+# ビルド成果物
+*.o
+chr.bin
+nesfetch.nes
+
+# C -> アセンブリ中間ファイル（Cから生成されたもののみ）
+src/main.s
+
+# エディタ
+*~
+*.swp
+.DS_Store
