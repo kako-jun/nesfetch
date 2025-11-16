@@ -65,13 +65,35 @@ make
 - **Aボタン**: 選択したロゴを表示
 - **Bボタン**: メニューに戻る
 
-## 対応ロゴ
+## 対応ロゴ（20種類）
 
-1. Linux (Tux風)
-2. PlayStation
-3. Apple
-4. Windows
-5. NES
+### 任天堂
+1. NES/ファミコン
+2. Super Nintendo/スーパーファミコン
+3. Nintendo 64
+4. GameCube
+5. Wii
+6. Game Boy
+7. Game Boy Advance
+8. Nintendo DS
+
+### Sony PlayStation
+9. PlayStation 1
+10. PlayStation 2
+11. PlayStation 3
+12. PlayStation 4
+
+### SEGA
+13. Genesis/Mega Drive
+14. Saturn
+15. Dreamcast
+
+### その他
+16. Xbox
+17. Xbox 360
+18. Atari 2600
+19. PC Engine/TurboGrafx-16
+20. Neo Geo
 
 ## プロジェクト構成
 
