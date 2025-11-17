@@ -210,13 +210,13 @@ void draw_logo_screen(unsigned char logo_idx) {
     // ロゴタイトル
     draw_text(12, 2, logo_names[logo_idx]);
 
-    // ロゴタイルパターン描画
-    base_tile = 0x40 + (logo_idx << 2);
+    // ロゴタイルパターン描画（3×4タイル = 24×32ピクセル）
+    base_tile = 0x40 + (logo_idx * 12);  /* 12タイル/ロゴ */
 
-    for (y = 0; y < 8; y++) {
-        set_ppu_addr(0x2000 + ((8 + y) << 5) + 10);
-        for (x = 0; x < 12; x++) {
-            PPU_DATA = base_tile + (y * 2) + (x >> 3);
+    for (y = 0; y < 4; y++) {
+        set_ppu_addr(0x2000 + ((10 + y) << 5) + 13);
+        for (x = 0; x < 3; x++) {
+            PPU_DATA = base_tile + (y * 3) + x;
         }
     }
 
