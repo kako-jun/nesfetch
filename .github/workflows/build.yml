@@ -32,7 +32,7 @@ jobs:
       run: make
 
     - name: Upload ROM artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nesfetch-rom
         path: nesfetch.nes
