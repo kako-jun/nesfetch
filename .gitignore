@@ -10,3 +10,4 @@ src/main.s
 *~
 *.swp
 .DS_Store
+.claude/settings.local.json
