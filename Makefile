@@ -40,13 +40,21 @@ src/header.o: src/header.s
 src/reset.o: src/reset.s
 	$(CA65) $(ASFLAGS) -o $@ $<
 
-# リンク
-$(TARGET).nes: $(ALL_OBJECTS) chr.bin
-	$(LD65) $(LDFLAGS) -o $@ $(ALL_OBJECTS) /usr/local/share/cc65/lib/nes.lib
-
 # CHRデータ生成
 chr.bin:
 	python3 tools/create_chr.py
 
+# CHRデータをアセンブリに変換
+src/chr.s: chr.bin
+	echo '.segment "CHR"' > $@
+	echo '.incbin "chr.bin"' >> $@
+
+src/chr.o: src/chr.s
+	$(CA65) $(ASFLAGS) -o $@ $<
+
+# リンク
+$(TARGET).nes: $(ALL_OBJECTS) src/chr.o
+	$(LD65) $(LDFLAGS) -o $@ $(ALL_OBJECTS) src/chr.o /usr/local/share/cc65/lib/nes.lib
+
 clean:
-	rm -f $(C_SOURCES).s $(ALL_OBJECTS) $(TARGET).nes chr.bin
+	rm -f $(C_SOURCES).s $(ALL_OBJECTS) src/chr.s src/chr.o $(TARGET).nes chr.bin
