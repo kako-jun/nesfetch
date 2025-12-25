@@ -12,3 +12,4 @@ src/main.s
 .DS_Store
 .claude/settings.local.json
 .serena/
+.mcp.json
