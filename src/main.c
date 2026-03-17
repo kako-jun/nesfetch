@@ -44,6 +44,7 @@ unsigned char menu_scroll = 0;  /* メニュースクロール位置 */
 unsigned char pad1, pad1_prev;
 unsigned char game_state = 0;  /* 0=メニュー, 1=ロゴ表示 */
 volatile unsigned char nmi_ready = 0;  /* NMI完了フラグ */
+unsigned char ppu_ctrl_shadow = 0;  /* PPU_CTRL影レジスタ（$2000は書込専用） */
 
 /* ロゴ名（タイル番号として表現） */
 /* A=0x21, B=0x22, ... Z=0x3A, 0=0x10, 1=0x11, ... 9=0x19 */
@@ -80,13 +81,12 @@ const unsigned char logo_names[29][16] = {
 };
 
 // VBlank待機（NMI有効時はフラグベース、無効時はポーリング）
+// 注意: PPU_CTRL ($2000) は書き込み専用。読み取りはopen bus。影レジスタで判定
 void wait_vblank(void) {
-    if (PPU_CTRL & 0x80) {
-        // NMI有効: NMIハンドラがフラグをセットするのを待つ
+    if (ppu_ctrl_shadow & 0x80) {
         while (!nmi_ready);
         nmi_ready = 0;
     } else {
-        // NMI無効: PPU_STATUSポーリング（初期化時のみ）
         while ((PPU_STATUS & 0x80) == 0);
     }
 }
@@ -262,7 +262,8 @@ void game_main(void) {
     unsigned char pressed;
 
     /* PPU初期化 */
-    PPU_CTRL = 0x00;
+    ppu_ctrl_shadow = 0x00;
+    PPU_CTRL = ppu_ctrl_shadow;
     PPU_MASK = 0x00;
 
     wait_vblank();
@@ -270,7 +271,8 @@ void game_main(void) {
     load_palette();
     draw_menu();
 
-    PPU_CTRL = 0x80;  /* NMI有効 */
+    ppu_ctrl_shadow = 0x80;  /* NMI有効 */
+    PPU_CTRL = ppu_ctrl_shadow;
     PPU_MASK = 0x1E;  /* 描画有効 */
 
     pad1_prev = 0;
