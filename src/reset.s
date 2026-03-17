@@ -59,9 +59,14 @@ clear_ram:
 forever:
     jmp forever
 
-; NMI handler
+; NMI handler - VBlankフラグをセット
 .export _nmi
+.import _nmi_ready
 _nmi:
+    pha
+    lda #$01
+    sta _nmi_ready
+    pla
     rti
 
 ; IRQ handler

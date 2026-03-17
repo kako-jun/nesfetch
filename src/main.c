@@ -43,6 +43,7 @@ unsigned char total_logos = 29;
 unsigned char menu_scroll = 0;  /* メニュースクロール位置 */
 unsigned char pad1, pad1_prev;
 unsigned char game_state = 0;  /* 0=メニュー, 1=ロゴ表示 */
+volatile unsigned char nmi_ready = 0;  /* NMI完了フラグ */
 
 /* ロゴ名（タイル番号として表現） */
 /* A=0x21, B=0x22, ... Z=0x3A, 0=0x10, 1=0x11, ... 9=0x19 */
@@ -78,9 +79,16 @@ const unsigned char logo_names[29][16] = {
     {0x37, 0x2f, 0x2E, 0x24, 0x25, 0x32, 0x33, 0x37, 0x21, 0x2E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}    /* WONDERSWAN */
 };
 
-// VBlank待機
+// VBlank待機（NMI有効時はフラグベース、無効時はポーリング）
 void wait_vblank(void) {
-    while ((PPU_STATUS & 0x80) == 0);
+    if (PPU_CTRL & 0x80) {
+        // NMI有効: NMIハンドラがフラグをセットするのを待つ
+        while (!nmi_ready);
+        nmi_ready = 0;
+    } else {
+        // NMI無効: PPU_STATUSポーリング（初期化時のみ）
+        while ((PPU_STATUS & 0x80) == 0);
+    }
 }
 
 // PPUアドレス設定
@@ -98,11 +106,11 @@ void load_palette(void) {
     }
 }
 
-// 画面クリア
+// 画面クリア（ネームテーブル960バイト＋属性テーブル64バイト）
 void clear_screen(void) {
     unsigned int i;
     set_ppu_addr(0x2000);
-    for (i = 0; i < 960; i++) {
+    for (i = 0; i < 1024; i++) {
         PPU_DATA = 0x00;
     }
 }
@@ -182,10 +190,10 @@ void draw_menu(void) {
 
     /* ページ表示 */
     set_ppu_addr(0x2000 + (20 << 5) + 4);
-    PPU_DATA = (current_logo + 1) / 10 + 0x11;  /* 現在位置の10の位 */
+    PPU_DATA = (current_logo + 1) / 10 + 0x10;  /* 現在位置の10の位 */
     PPU_DATA = (current_logo + 1) % 10 + 0x10;  /* 現在位置の1の位 */
     PPU_DATA = 0x3C;  /* / */
-    PPU_DATA = total_logos / 10 + 0x11;
+    PPU_DATA = total_logos / 10 + 0x10;
     PPU_DATA = total_logos % 10 + 0x10;
 
     /* 操作説明 */
