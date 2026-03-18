@@ -40,9 +40,7 @@ const unsigned char palette[32] = {
 /* 変数 */
 unsigned char current_logo = 0;
 unsigned char total_logos = 29;
-unsigned char menu_scroll = 0;  /* メニュースクロール位置 */
 unsigned char pad1, pad1_prev;
-unsigned char game_state = 0;  /* 0=メニュー, 1=ロゴ表示 */
 volatile unsigned char nmi_ready = 0;  /* NMI完了フラグ */
 unsigned char ppu_ctrl_shadow = 0;  /* PPU_CTRL影レジスタ（$2000は書込専用） */
 
@@ -131,83 +129,11 @@ void draw_text(unsigned char x, unsigned char y, const unsigned char* text) {
 const unsigned char title_text[] = {0x2E, 0x25, 0x33, 0x26, 0x25, 0x34, 0x23, 0x28, 0x00};  // NESFETCH
 
 // 操作説明
-const unsigned char help1_text[] = {0x35, 0x30, 0x3C, 0x24, 0x2F, 0x37, 0x2E, 0x3B, 0x33, 0x25, 0x2C, 0x25, 0x23, 0x34, 0x00};  // UP-DOWN:SELECT
-const unsigned char help2_text[] = {0x21, 0x3B, 0x33, 0x28, 0x2F, 0x37, 0x00};  // A:SHOW
+const unsigned char help_text[] = {0x35, 0x30, 0x3C, 0x24, 0x2F, 0x37, 0x2E, 0x3B, 0x22, 0x32, 0x2F, 0x37, 0x33, 0x25, 0x00};  // UP-DOWN:BROWSE
 
-/* メニュー描画（スクロール対応） */
-void draw_menu(void) {
-    unsigned char i, display_count;
-    unsigned char start_idx, end_idx;
-
-    wait_vblank();
-    PPU_MASK = 0x00;  /* 描画無効 */
-
-    clear_screen();
-
-    /* タイトル */
-    draw_text(11, 2, title_text);
-
-    /* スクロール位置の調整 */
-    if (current_logo < menu_scroll) {
-        menu_scroll = current_logo;
-    }
-    if (current_logo >= menu_scroll + 10) {
-        menu_scroll = current_logo - 9;
-    }
-
-    /* 表示範囲を決定（最大10項目） */
-    start_idx = menu_scroll;
-    end_idx = menu_scroll + 10;
-    if (end_idx > total_logos) {
-        end_idx = total_logos;
-    }
-
-    /* ロゴリスト */
-    display_count = 0;
-    for (i = start_idx; i < end_idx; i++) {
-        unsigned char row = 6 + display_count;
-
-        /* カーソル */
-        if (i == current_logo) {
-            set_ppu_addr(0x2000 + (row << 5) + 4);
-            PPU_DATA = 0x3D;  /* > 記号 */
-        }
-
-        /* ロゴ名 */
-        draw_text(6, row, logo_names[i]);
-        display_count++;
-    }
-
-    /* スクロールインジケーター */
-    if (menu_scroll > 0) {
-        set_ppu_addr(0x2000 + (5 << 5) + 28);
-        PPU_DATA = 0x3E;  /* ▲ */
-    }
-    if (end_idx < total_logos) {
-        set_ppu_addr(0x2000 + (17 << 5) + 28);
-        PPU_DATA = 0x3D;  /* ▼ */
-    }
-
-    /* ページ表示 */
-    set_ppu_addr(0x2000 + (20 << 5) + 4);
-    PPU_DATA = (current_logo + 1) / 10 + 0x10;  /* 現在位置の10の位 */
-    PPU_DATA = (current_logo + 1) % 10 + 0x10;  /* 現在位置の1の位 */
-    PPU_DATA = 0x3C;  /* / */
-    PPU_DATA = total_logos / 10 + 0x10;
-    PPU_DATA = total_logos % 10 + 0x10;
-
-    /* 操作説明 */
-    draw_text(4, 22, help1_text);
-    draw_text(4, 24, help2_text);
-
-    PPU_SCROLL = 0;
-    PPU_SCROLL = 0;
-    PPU_MASK = 0x1E;  /* 描画有効 */
-}
-
-// ロゴ表示
-void draw_logo_screen(unsigned char logo_idx) {
-    unsigned char x, y;
+// ロゴ表示（メイン画面 — 上下キーで直接切替）
+void draw_logo_screen(void) {
+    unsigned char x, y, len;
     unsigned char base_tile;
 
     wait_vblank();
@@ -215,27 +141,44 @@ void draw_logo_screen(unsigned char logo_idx) {
 
     clear_screen();
 
-    // ロゴタイトル
-    draw_text(12, 2, logo_names[logo_idx]);
+    // タイトル
+    draw_text(11, 2, title_text);
+
+    // コンソール名（中央寄せ）
+    len = 0;
+    while (logo_names[current_logo][len] != 0x00 && len < 16) len++;
+    draw_text((32 - len) / 2, 5, logo_names[current_logo]);
 
     // ロゴタイルパターン描画（3×4タイル = 24×32ピクセル）
-    base_tile = 0x40 + (logo_idx * 12);  /* 12タイル/ロゴ */
+    base_tile = 0x40 + (current_logo * 12);
 
     for (y = 0; y < 4; y++) {
-        set_ppu_addr(0x2000 + ((10 + y) << 5) + 13);
+        set_ppu_addr(0x2000 + ((10 + y) << 5) + 14);
         for (x = 0; x < 3; x++) {
             PPU_DATA = base_tile + (y * 3) + x;
         }
     }
 
-    // 戻る説明
-    set_ppu_addr(0x2000 + (24 << 5) + 8);
-    PPU_DATA = 0x22;  // B
-    PPU_DATA = 0x3B;  // :
-    PPU_DATA = 0x22;  // B
-    PPU_DATA = 0x21;  // A
-    PPU_DATA = 0x23;  // C
-    PPU_DATA = 0x2B;  // K
+    // ページ表示（中央）
+    set_ppu_addr(0x2000 + (18 << 5) + 13);
+    PPU_DATA = (current_logo + 1) / 10 + 0x10;
+    PPU_DATA = (current_logo + 1) % 10 + 0x10;
+    PPU_DATA = 0x3C;  /* - */
+    PPU_DATA = total_logos / 10 + 0x10;
+    PPU_DATA = total_logos % 10 + 0x10;
+
+    // ナビゲーション矢印
+    if (current_logo > 0) {
+        set_ppu_addr(0x2000 + (7 << 5) + 15);
+        PPU_DATA = 0x3E;  /* ▲ */
+    }
+    if (current_logo < total_logos - 1) {
+        set_ppu_addr(0x2000 + (16 << 5) + 15);
+        PPU_DATA = 0x3D;  /* ▼ */
+    }
+
+    // 操作説明
+    draw_text(8, 26, help_text);
 
     PPU_SCROLL = 0;
     PPU_SCROLL = 0;
@@ -269,7 +212,7 @@ void game_main(void) {
     wait_vblank();
 
     load_palette();
-    draw_menu();
+    draw_logo_screen();
 
     ppu_ctrl_shadow = 0x80;  /* NMI有効 */
     PPU_CTRL = ppu_ctrl_shadow;
@@ -277,38 +220,24 @@ void game_main(void) {
 
     pad1_prev = 0;
 
-    /* メインループ */
+    /* メインループ — 上下キーで直接ロゴ切替 */
     while (1) {
         wait_vblank();
 
         pad1 = read_controller();
         pressed = pad1 & ~pad1_prev;
 
-        if (game_state == 0) {
-            /* メニュー状態 */
-            if (pressed & BTN_UP) {
-                if (current_logo > 0) {
-                    current_logo--;
-                    draw_menu();
-                }
+        if (pressed & BTN_UP) {
+            if (current_logo > 0) {
+                current_logo--;
+                draw_logo_screen();
             }
+        }
 
-            if (pressed & BTN_DOWN) {
-                if (current_logo < total_logos - 1) {
-                    current_logo++;
-                    draw_menu();
-                }
-            }
-
-            if (pressed & BTN_A) {
-                game_state = 1;
-                draw_logo_screen(current_logo);
-            }
-        } else {
-            /* ロゴ表示状態 */
-            if (pressed & BTN_B) {
-                game_state = 0;
-                draw_menu();
+        if (pressed & BTN_DOWN) {
+            if (current_logo < total_logos - 1) {
+                current_logo++;
+                draw_logo_screen();
             }
         }
 
