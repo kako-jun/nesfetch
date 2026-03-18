@@ -128,27 +128,60 @@ void draw_text(unsigned char x, unsigned char y, const unsigned char* text) {
 // タイトル
 const unsigned char title_text[] = {0x2E, 0x25, 0x33, 0x26, 0x25, 0x34, 0x23, 0x28, 0x00};  // NESFETCH
 
+// 行クリア
+void clear_row(unsigned char y) {
+    unsigned char i;
+    set_ppu_addr(0x2000 + (y << 5));
+    for (i = 0; i < 32; i++) {
+        PPU_DATA = 0x00;
+    }
+}
+
 // ロゴ表示（メイン画面 — 上下キーで直接切替）
 void draw_logo_screen(void) {
     unsigned char x, y, len;
     unsigned char base_tile;
+    unsigned char use_pt1;
+    static unsigned char first_draw = 1;
 
     wait_vblank();
     PPU_MASK = 0x00;
 
-    clear_screen();
-
-    // タイトル
-    draw_text(11, 2, title_text);
+    if (first_draw) {
+        clear_screen();
+        draw_text(11, 2, title_text);
+        first_draw = 0;
+    } else {
+        // Clear only dynamic rows
+        clear_row(5);   // console name
+        clear_row(7);   // up arrow
+        clear_row(10);  // logo
+        clear_row(11);
+        clear_row(12);
+        clear_row(13);
+        clear_row(16);  // down arrow
+        clear_row(18);  // page counter
+    }
 
     // コンソール名（中央寄せ）
     len = 0;
     while (logo_names[current_logo][len] != 0x00 && len < 16) len++;
     draw_text((32 - len) / 2, 5, logo_names[current_logo]);
 
-    // ロゴタイルパターン描画（3×4タイル = 24×32ピクセル）
-    base_tile = 0x40 + (current_logo * 12);
+    // Determine pattern table and base tile
+    if (current_logo < 16) {
+        use_pt1 = 0;
+        base_tile = 0x40 + (current_logo * 12);
+    } else {
+        use_pt1 = 1;
+        base_tile = 0x40 + ((current_logo - 16) * 12);
+    }
 
+    // Set PPU_CTRL: NMI(bit7) + BG pattern table(bit4)
+    ppu_ctrl_shadow = 0x80 | (use_pt1 ? 0x10 : 0x00);
+    PPU_CTRL = ppu_ctrl_shadow;
+
+    // ロゴタイルパターン描画（3×4タイル = 24×32ピクセル）
     for (y = 0; y < 4; y++) {
         set_ppu_addr(0x2000 + ((10 + y) << 5) + 14);
         for (x = 0; x < 3; x++) {
@@ -161,6 +194,11 @@ void draw_logo_screen(void) {
     PPU_DATA = 0x3E;  /* ▲ */
     set_ppu_addr(0x2000 + (16 << 5) + 15);
     PPU_DATA = 0x3D;  /* ▼ */
+
+    // Page number (current only, centered)
+    set_ppu_addr(0x2000 + (18 << 5) + 14);
+    PPU_DATA = (current_logo + 1) / 10 + 0x10;
+    PPU_DATA = (current_logo + 1) % 10 + 0x10;
 
     PPU_SCROLL = 0;
     PPU_SCROLL = 0;

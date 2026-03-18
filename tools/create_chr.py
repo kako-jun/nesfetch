@@ -547,9 +547,15 @@ def main():
     for tile_id, pattern in font_data.items():
         write_tile(tile_id, pattern)
     for logo_idx, logo in enumerate(all_logos):
-        base_tile = 0x40 + (logo_idx * 12)
+        if logo_idx < 16:
+            base_tile = 0x40 + (logo_idx * 12)
+        else:
+            base_tile = 256 + 0x40 + ((logo_idx - 16) * 12)  # PT1, after font copy
         for tile_offset, pattern in enumerate(logo):
             write_tile(base_tile + tile_offset, pattern)
+    # Copy font to pattern table 1
+    for tile_id, pattern in font_data.items():
+        write_tile(256 + tile_id, pattern)
     with open('chr.bin', 'wb') as f:
         f.write(chr_data)
     print(f'CHR-ROM created: chr.bin ({len(chr_data)} bytes)')
