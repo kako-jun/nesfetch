@@ -40,8 +40,8 @@ src/header.o: src/header.s
 src/reset.o: src/reset.s
 	$(CA65) $(ASFLAGS) -o $@ $<
 
-# CHRデータ生成
-chr.bin:
+# CHRデータ生成（スクリプト変更時も再生成）
+chr.bin: tools/create_chr.py
 	python3 tools/create_chr.py
 
 # CHRデータをアセンブリに変換

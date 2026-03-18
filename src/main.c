@@ -39,7 +39,7 @@ const unsigned char palette[32] = {
 
 /* 変数 */
 unsigned char current_logo = 0;
-unsigned char total_logos = 29;
+unsigned char total_logos = 16;  /* PT0に収まる16ロゴ（PT1切替問題は後日対応） */
 unsigned char pad1, pad1_prev;
 volatile unsigned char nmi_ready = 0;  /* NMI完了フラグ */
 unsigned char ppu_ctrl_shadow = 0;  /* PPU_CTRL影レジスタ（$2000は書込専用） */
@@ -141,11 +141,17 @@ void clear_row(unsigned char y) {
 void draw_logo_screen(void) {
     unsigned char x, y, len;
     unsigned char base_tile;
-    unsigned char use_pt1;
     static unsigned char first_draw = 1;
+
+    // 範囲ガード
+    if (current_logo >= total_logos) current_logo = 0;
 
     wait_vblank();
     PPU_MASK = 0x00;
+
+    // テキスト描画はPT0で行う
+    ppu_ctrl_shadow = 0x80;
+    PPU_CTRL = ppu_ctrl_shadow;
 
     if (first_draw) {
         clear_screen();
@@ -168,18 +174,8 @@ void draw_logo_screen(void) {
     while (logo_names[current_logo][len] != 0x00 && len < 16) len++;
     draw_text((32 - len) / 2, 5, logo_names[current_logo]);
 
-    // Determine pattern table and base tile
-    if (current_logo < 16) {
-        use_pt1 = 0;
-        base_tile = 0x40 + (current_logo * 12);
-    } else {
-        use_pt1 = 1;
-        base_tile = 0x40 + ((current_logo - 16) * 12);
-    }
-
-    // Set PPU_CTRL: NMI(bit7) + BG pattern table(bit4)
-    ppu_ctrl_shadow = 0x80 | (use_pt1 ? 0x10 : 0x00);
-    PPU_CTRL = ppu_ctrl_shadow;
+    // PT0固定（全16ロゴがPT0に収まる）
+    base_tile = 0x40 + (current_logo * 12);
 
     // ロゴタイルパターン描画（3×4タイル = 24×32ピクセル）
     for (y = 0; y < 4; y++) {
