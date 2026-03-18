@@ -128,9 +128,6 @@ void draw_text(unsigned char x, unsigned char y, const unsigned char* text) {
 // タイトル
 const unsigned char title_text[] = {0x2E, 0x25, 0x33, 0x26, 0x25, 0x34, 0x23, 0x28, 0x00};  // NESFETCH
 
-// 操作説明
-const unsigned char help_text[] = {0x35, 0x30, 0x3C, 0x24, 0x2F, 0x37, 0x2E, 0x3B, 0x22, 0x32, 0x2F, 0x37, 0x33, 0x25, 0x00};  // UP-DOWN:BROWSE
-
 // ロゴ表示（メイン画面 — 上下キーで直接切替）
 void draw_logo_screen(void) {
     unsigned char x, y, len;
@@ -159,26 +156,11 @@ void draw_logo_screen(void) {
         }
     }
 
-    // ページ表示（中央）
-    set_ppu_addr(0x2000 + (18 << 5) + 13);
-    PPU_DATA = (current_logo + 1) / 10 + 0x10;
-    PPU_DATA = (current_logo + 1) % 10 + 0x10;
-    PPU_DATA = 0x3C;  /* - */
-    PPU_DATA = total_logos / 10 + 0x10;
-    PPU_DATA = total_logos % 10 + 0x10;
-
-    // ナビゲーション矢印
-    if (current_logo > 0) {
-        set_ppu_addr(0x2000 + (7 << 5) + 15);
-        PPU_DATA = 0x3E;  /* ▲ */
-    }
-    if (current_logo < total_logos - 1) {
-        set_ppu_addr(0x2000 + (16 << 5) + 15);
-        PPU_DATA = 0x3D;  /* ▼ */
-    }
-
-    // 操作説明
-    draw_text(8, 26, help_text);
+    // ナビゲーション矢印（常に表示、ラップアラウンドするため）
+    set_ppu_addr(0x2000 + (7 << 5) + 15);
+    PPU_DATA = 0x3E;  /* ▲ */
+    set_ppu_addr(0x2000 + (16 << 5) + 15);
+    PPU_DATA = 0x3D;  /* ▼ */
 
     PPU_SCROLL = 0;
     PPU_SCROLL = 0;
@@ -230,20 +212,21 @@ void game_main(void) {
         if (pressed & BTN_UP) {
             if (current_logo > 0) {
                 current_logo--;
-                draw_logo_screen();
+            } else {
+                current_logo = total_logos - 1;  /* ラップアラウンド */
             }
+            draw_logo_screen();
         }
 
         if (pressed & BTN_DOWN) {
             if (current_logo < total_logos - 1) {
                 current_logo++;
-                draw_logo_screen();
+            } else {
+                current_logo = 0;  /* ラップアラウンド */
             }
+            draw_logo_screen();
         }
 
         pad1_prev = pad1;
-
-        PPU_SCROLL = 0;
-        PPU_SCROLL = 0;
     }
 }
