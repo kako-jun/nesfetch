@@ -1,30 +1,28 @@
 # nesfetch
 
-neofetch にインスパイアされた、実際の NES で動作するゲーム機ロゴビューア。29種類のゲーム機のドット絵ロゴをNESコントローラーで閲覧できる。
+neofetch にインスパイアされた、実際の NES で動作するゲーム機ロゴビューア。16種類のゲーム機のドット絵ロゴを十字キーの上下だけで直接切り替えて閲覧できる。
 
 ## スクリーンショット
 
-> ビルド後に Mesen や FCEUX で実行。メニュー画面でロゴを選択し、24×32ピクセルのドット絵を表示。
+> ビルド後に Mesen や FCEUX で実行。上下キーでロゴを直接切替、24×32ピクセルのドット絵を表示。
 
-## 収録ロゴ（29種）
+## 収録ロゴ（16種）
 
 | メーカー | 機種 |
 |---|---|
-| **Nintendo** (11) | NES, SNES, N64, GameCube, Wii, Wii U, Switch, Game Boy, GBA, DS, 3DS |
-| **PlayStation** (6) | PS1, PS2, PS3, PS4, PS5, PS Vita |
-| **SEGA** (3) | Genesis, Saturn, Dreamcast |
-| **Xbox** (4) | Xbox, Xbox 360, Xbox One, Xbox Series X/S |
-| **その他** (5) | Atari, PC Engine, Neo Geo, Steam Deck, WonderSwan |
+| **Nintendo** (8) | NES, SNES, N64, GameCube, Wii, Wii U, Switch, Game Boy, GBA, NDS, 3DS |
+| **PlayStation** (5) | PS1, PS2, PS3, PS4, PS5 |
+
+将来的にPT1対応で13種追加予定（PSVita, Genesis, Saturn, Dreamcast, Xbox, Xbox360, XboxOne, XSX, Atari, PCEngine, NeoGeo, SteamDeck, WonderSwan）。
 
 ## 操作方法
 
 | 操作 | 機能 |
 |------|------|
-| 十字キー上下 | メニュー選択（スクロール対応） |
-| Aボタン | 選択中のロゴを表示 |
-| Bボタン | メニューに戻る |
+| 十字キー上 | 前のロゴに切替（ラップアラウンド） |
+| 十字キー下 | 次のロゴに切替（ラップアラウンド） |
 
-メニューは10項目ずつ表示。ページ番号が画面下部に表示される。
+メニューはなく、起動直後からロゴを表示。上下キーだけで全ロゴを閲覧できる。ページ番号とナビゲーション矢印（▲▼）が常時表示される。
 
 ## ビルド
 
