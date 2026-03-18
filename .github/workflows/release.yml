@@ -14,10 +14,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
@@ -39,7 +39,7 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
         name: NESfetch ${{ steps.get_version.outputs.VERSION }}
@@ -56,12 +56,12 @@ jobs:
           - **A Button**: Display selected logo
           - **B Button**: Back to menu
 
-          ### Supported Logos
-          - Linux
-          - PlayStation
-          - Apple
-          - Windows
-          - NES
+          ### Supported Logos (29 consoles)
+          **Nintendo:** NES, SNES, N64, GameCube, Wii, Wii U, Switch, Game Boy, GBA, NDS, 3DS
+          **PlayStation:** PS1, PS2, PS3, PS4, PS5, PS Vita
+          **Sega:** Genesis, Saturn, Dreamcast
+          **Xbox:** Xbox, Xbox 360, Xbox One, Xbox Series X
+          **Other:** Atari, PC Engine, Neo Geo, Steam Deck, WonderSwan
         files: |
           nesfetch.nes
         draft: false

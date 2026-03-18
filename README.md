@@ -11,10 +11,10 @@ neofetch にインスパイアされた、実際の NES で動作するゲーム
 | メーカー | 機種 |
 |---|---|
 | **Nintendo** (11) | NES, SNES, N64, GameCube, Wii, Wii U, Switch, Game Boy, GBA, DS, 3DS |
-| **PlayStation** (7) | PS1, PS2, PS3, PS4, PS5, PS Vita |
+| **PlayStation** (6) | PS1, PS2, PS3, PS4, PS5, PS Vita |
 | **SEGA** (3) | Genesis, Saturn, Dreamcast |
 | **Xbox** (4) | Xbox, Xbox 360, Xbox One, Xbox Series X/S |
-| **その他** (4) | Atari, PC Engine, Neo Geo, Steam Deck, WonderSwan |
+| **その他** (5) | Atari, PC Engine, Neo Geo, Steam Deck, WonderSwan |
 
 ## 操作方法
 

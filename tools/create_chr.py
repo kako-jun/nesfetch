@@ -523,10 +523,25 @@ all_logos = [
 ]
 
 def write_tile(tile_index, pattern):
+    """Write an 8x8 tile to CHR-ROM with proper NES 2-bit plane encoding.
+
+    Each NES tile is 16 bytes: 8 bytes for bit plane 0 (low bit),
+    then 8 bytes for bit plane 1 (high bit).
+    Both planes together select palette colors 0-3:
+      plane1=0, plane0=0 -> color 0 (background/transparent)
+      plane1=0, plane0=1 -> color 1
+      plane1=1, plane0=0 -> color 2
+      plane1=1, plane0=1 -> color 3
+
+    The pattern data encodes a 1-bit-per-pixel design. We write it to
+    both bit planes so set pixels use color 3 (brightest palette entry),
+    enabling the full 4-color palette to be utilized by future multi-color
+    tile designs.
+    """
     offset = tile_index * 16
     for i in range(8):
-        chr_data[offset + i] = pattern[i]
-        chr_data[offset + 8 + i] = 0x00
+        chr_data[offset + i] = pattern[i]        # Bit plane 0 (low bit)
+        chr_data[offset + 8 + i] = pattern[i]    # Bit plane 1 (high bit)
 
 def main():
     for tile_id, pattern in font_data.items():
