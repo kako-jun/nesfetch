@@ -2,9 +2,9 @@ name: Build NES ROM
 
 on:
   push:
-    branches: [ main, master, 'claude/**' ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 jobs:
   build:
